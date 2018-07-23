@@ -69,7 +69,11 @@ export default function pageStateMethod(config = {}) {
             });
           }
         } catch (e) {
-          // console.error(e);
+          let type = 'SERVER_ERROR'
+          if (e.code === 'ECONNABORTED' || e.message === 'Network Error') {
+            type = 'NO_INTERNET'
+          }
+
           this.props.resetPageState(); // reset all
           const retryFn = decorateClassMember.bind(this);
           if (!isEmpty(errorConfigs)) {
@@ -81,6 +85,7 @@ export default function pageStateMethod(config = {}) {
                 merge({}, args[1] || {}, {
                   payload: {
                     error: e,
+                    type,
                     retry: () => Reflect.apply(retryFn, this, arguments),
                   },
                 })
